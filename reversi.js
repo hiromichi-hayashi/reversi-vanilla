@@ -132,6 +132,7 @@ const operationDom = (operation = "create", count) => {
 	else createDom(count);
 };
 
+//パスボタン
 button.addEventListener("click", () => {
 	tern === "1" ? (tern = "2") : (tern = "1");
 });

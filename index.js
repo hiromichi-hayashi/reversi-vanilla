@@ -87,5 +87,3 @@ function updateValue(e) {
 }
 
 button.addEventListener("click", createBorderContent);
-//リロードしたらモーダルを表示
-//モーダルに入力値を入れてマス目が
