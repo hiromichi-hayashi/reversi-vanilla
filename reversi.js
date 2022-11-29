@@ -56,7 +56,6 @@ const createDom = (count) => {
 		target[index].addEventListener("click", (e) => {
 			// クリックした後
 			if (e.target.dataset.player !== "0") return;
-			console.log(player_1, player_2);
 			let margePice = [];
 			const reversePiece = margePice.concat(
 				checkReversPiece(e.target.dataset, "top"),
