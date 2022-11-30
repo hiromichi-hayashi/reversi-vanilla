@@ -1,5 +1,5 @@
 const element = document.querySelector("#test");
-const itemClass = "tinko";
+const itemClass = "piece";
 
 const defaultBoardCount = 8;
 let num = defaultBoardCount;
@@ -51,6 +51,18 @@ const createDom = (count) => {
 
 	const target = document.querySelectorAll(`.${itemClass}`);
 
+	target.forEach((element) => {
+		element.style.width = `calc(100% / ${count})`;
+		element.style.height = `calc(100% / ${count})`;
+	});
+
+	//初期位置
+	//黒
+	initPiece(player_1);
+
+	//白
+	initPiece(player_2);
+
 	//クリックした時
 	for (let index = 0; index < target.length; index++) {
 		target[index].addEventListener("click", (e) => {
@@ -101,6 +113,11 @@ const createDom = (count) => {
 					//データ格納
 					tern === "1" ? player_1.push(element) : player_2.push(element);
 
+					player_2.filter((e) => {
+						console.log(e, element);
+						return e.row !== element.row && e.line !== element.line;
+					});
+
 					setPiece.dataset.player = tern;
 				});
 				margePice = [];
@@ -108,18 +125,6 @@ const createDom = (count) => {
 			}
 		});
 	}
-
-	target.forEach((element) => {
-		element.style.width = `calc(100% / ${count})`;
-		element.style.height = `calc(100% / ${count})`;
-	});
-
-	//初期位置
-	//黒
-	initPiece(player_1);
-
-	//白
-	initPiece(player_2);
 };
 
 const createBorderContent = () => {
