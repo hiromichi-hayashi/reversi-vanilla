@@ -1,11 +1,9 @@
-const element = document.querySelector("#test");
+const element = document.querySelector("#board");
+const resurlt = document.querySelector("#result");
+const pathButton = document.querySelector("#pathButton");
 const itemClass = "piece";
-
 const defaultBoardCount = 8;
-let num = defaultBoardCount;
-let tern = "1";
-
-const player_1 = [
+const initPlayerPiece = [
 	{
 		row: "3",
 		line: "3",
@@ -16,9 +14,6 @@ const player_1 = [
 		line: "4",
 		player: "1",
 	},
-];
-
-const player_2 = [
 	{
 		row: "3",
 		line: "4",
@@ -31,15 +26,10 @@ const player_2 = [
 	},
 ];
 
-const input = document.querySelector("input");
-const button = document.querySelector("button");
-
-window.addEventListener("DOMContentLoaded", (e) => {
-	createDom(num);
-});
+let turn = "1";
+let totalPiece = [];
 
 const createDom = (count) => {
-	//クリックする前
 	for (let row = 0; row < count; row++) {
 		for (let line = 0; line < count; line++) {
 			element.insertAdjacentHTML(
@@ -57,17 +47,14 @@ const createDom = (count) => {
 	});
 
 	//初期位置
-	//黒
-	initPiece(player_1);
-
-	//白
-	initPiece(player_2);
+	initPiece(initPlayerPiece);
 
 	//クリックした時
 	for (let index = 0; index < target.length; index++) {
 		target[index].addEventListener("click", (e) => {
 			// クリックした後
 			if (e.target.dataset.player !== "0") return;
+
 			let margePice = [];
 			const reversePiece = margePice.concat(
 				checkReversPiece(e.target.dataset, "top"),
@@ -94,7 +81,7 @@ const createDom = (count) => {
 				reversePiece.push({
 					row: e.target.dataset.row,
 					line: e.target.dataset.line,
-					player: e.target.dataset.player,
+					player: turn,
 				});
 
 				//レンダリング
@@ -108,38 +95,58 @@ const createDom = (count) => {
 						`<span class='circle'></span>`
 					);
 					setPiece.querySelector(".circle").style.background =
-						tern === "1" ? "black" : "white";
+						turn === "1" ? "black" : "white";
 
 					//データ格納
-					tern === "1" ? player_1.push(element) : player_2.push(element);
+					const checkPlayerPiece = totalPiece.findIndex(
+						(e) =>
+							e.row === element.row &&
+							e.line === element.line &&
+							e.player !== element.player
+					);
 
-					player_2.filter((e) => {
-						console.log(e, element);
-						return e.row !== element.row && e.line !== element.line;
+					if (checkPlayerPiece === -1) {
+						totalPiece.push(element);
+					} else {
+						totalPiece[checkPlayerPiece] = element;
+					}
+
+					// 重複を削除する
+					totalPiece = totalPiece.filter((item, index, self) => {
+						return (
+							self.findIndex(
+								(e) => e.row === item.row && e.line === item.line
+							) === index
+						);
 					});
 
-					setPiece.dataset.player = tern;
+					setPiece.dataset.player = turn;
 				});
+
 				margePice = [];
-				tern === "1" ? (tern = "2") : (tern = "1");
+				turn === "1" ? (turn = "2") : (turn = "1");
+
+				if (totalPiece.length >= defaultBoardCount * defaultBoardCount) {
+					resurlt.insertAdjacentHTML(
+						"beforeend",
+						`<p>黒${resurltData("1").length}</p><p>白${
+							resurltData("2").length
+						}</p>`
+					);
+				}
 			}
 		});
 	}
 };
 
-const createBorderContent = () => {
-	operationDom("reset");
-	operationDom("create", num);
-};
-
-const operationDom = (operation = "create", count) => {
-	if (operation === "reset") element.innerHTML = "";
-	else createDom(count);
+//リザルト
+const resurltData = (player) => {
+	return totalPiece.filter((e) => e.player === player);
 };
 
 //パスボタン
-button.addEventListener("click", () => {
-	tern === "1" ? (tern = "2") : (tern = "1");
+pathButton.addEventListener("click", () => {
+	turn === "1" ? (turn = "2") : (turn = "1");
 });
 
 //初期ピース
@@ -168,10 +175,10 @@ const checkReversPiece = (target, direction) => {
 			direction === "left" || direction === "right"
 				? Number(target.line)
 				: Number(target.row);
-		isDirection(direction) ? index >= 0 : index < num;
+		isDirection(direction) ? index >= 0 : index < defaultBoardCount;
 		isDirection(direction) ? index-- : index++
 	) {
-		let piece =
+		const piece =
 			direction === "left" || direction === "right"
 				? document.querySelector(
 						`[data-row='${target.row}'][data-line='${index}']`
@@ -190,17 +197,17 @@ const checkReversPiece = (target, direction) => {
 			}
 
 			if (
-				piece.dataset.player !== tern //相手のコマか
+				piece.dataset.player !== turn //相手のコマか
 			) {
 				setData.push({
 					row: piece.dataset.row,
 					line: piece.dataset.line,
-					player: tern,
+					player: turn,
 				});
 			}
 
 			if (
-				piece.dataset.player === tern //自分のコマか
+				piece.dataset.player === turn //自分のコマか
 			) {
 				checkPiece = true;
 				break;
@@ -220,7 +227,7 @@ const checkReversPieceOblique = (target, direction) => {
 
 	for (
 		let index = Number(target.row);
-		direction.row === "top" ? index >= 0 : index < num;
+		direction.row === "top" ? index >= 0 : index < defaultBoardCount;
 		direction.row === "top" ? index-- : index++
 	) {
 		const setDirection = (direction) => {
@@ -272,25 +279,29 @@ const checkReversPieceOblique = (target, direction) => {
 			}
 
 			if (
-				piece.dataset.player !== tern //相手のコマか
+				piece.dataset.player !== turn //相手のコマか
 			) {
 				setData.push({
 					row: piece.dataset.row,
 					line: piece.dataset.line,
-					player: tern,
+					player: turn,
 				});
 			}
 
 			if (
-				piece.dataset.player === tern //自分のコマか
+				piece.dataset.player === turn //自分のコマか
 			) {
 				checkPiece = true;
 				break;
 			}
 		}
-		line = line < num ? line + 1 : line;
+		line = line < defaultBoardCount ? line + 1 : line;
 	}
 
 	!checkPiece && (setData = []);
 	return setData;
 };
+
+window.addEventListener("load", () => {
+	createDom(defaultBoardCount);
+});
